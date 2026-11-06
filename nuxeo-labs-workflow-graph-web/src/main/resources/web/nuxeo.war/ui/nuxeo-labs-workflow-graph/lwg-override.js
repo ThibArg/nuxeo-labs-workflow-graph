@@ -22,9 +22,9 @@
  *
  * Web UI's nuxeo-workflow-graph element is used in two places (document workflow bar and task view), and both
  * only call its show() method. Redefining the element is not possible (customElements.define would throw), so
- * its show() is patched once the element is defined: when the plugin is enabled, show() opens
- * nuxeo-labs-workflow-graph-dialog, created inside the element's shadow root; otherwise, or if the graph
- * cannot be drawn, the original show() is called. No Web UI file is modified.
+ * its show() is patched once the element is defined: show() opens nuxeo-labs-workflow-graph-dialog, created
+ * inside the element's shadow root; if the dialog is not available or the graph cannot be drawn, the original
+ * show() is called. No Web UI file is modified.
  *
  * @since 2025.1
  */
@@ -56,9 +56,6 @@
 
   function createShow(originalShow) {
     const show = function (...args) {
-      if (!LWG.getConfig().enabled) {
-        return originalShow.apply(this, args);
-      }
       const dialog = getDialog(this);
       if (!dialog) {
         console.warn(LWG.LOG_PREFIX, 'The graph dialog is not available, using the default graph');

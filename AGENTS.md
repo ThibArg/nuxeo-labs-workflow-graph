@@ -7,14 +7,15 @@ and machine-specific paths.
 
 Nuxeo LTS 2025 Web UI plugin, **front end only**: a simple, read-only replacement of the "View Graph" dialog of
 Web UI (the `nuxeo-workflow-graph` element, jsPlumb). It patches `nuxeo-workflow-graph.show()` once the element is
-defined (`lwg-override.js`); the default `show()` is kept as a fallback (plugin disabled, layout failure).
+defined (`lwg-override.js`); the default `show()` is kept as a fallback (dialog not available, layout failure).
+There is **no setting** to turn the plugin off (removed on purpose: it needed a restart, like uninstalling the
+package); do not add one back.
 Data: `GET /api/v1/workflow/{id}/graph` (required) and `GET /api/v1/workflow/{id}` (title and model name,
 optional), requested in parallel; the graph is drawn once both have answered.
 
 It is the simple sibling of `nuxeo-labs-custom-workflow-graph` (interactive version: details panel, Studio layout,
 legend...). The two packages conflict (`package.xml`). Names never overlap: namespace `NuxeoLabs.WorkflowGraph`
-(`LWG`), files and CSS classes `lwg-*`, i18n keys `labsWorkflowGraph.*`, property
-`org.nuxeo.web.ui.labsWorkflowGraph.enabled`, elements `nuxeo-labs-workflow-graph-*`.
+(`LWG`), files and CSS classes `lwg-*`, i18n keys `labsWorkflowGraph.*`, elements `nuxeo-labs-workflow-graph-*`.
 
 ### Scope (decided with the user, keep it)
 

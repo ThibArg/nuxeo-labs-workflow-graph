@@ -68,20 +68,6 @@ function distanceToBox(p, b) {
 
 /* ==================== Core ==================== */
 
-test('getConfig: enabled by default, accepts booleans and strings', () => {
-  const c = load();
-  const L = c.NuxeoLabs.WorkflowGraph;
-  assert.equal(L.getConfig().enabled, true);
-  c.Nuxeo = { UI: { config: { labsWorkflowGraph: { enabled: 'false' } } } };
-  assert.equal(L.getConfig().enabled, false);
-  c.Nuxeo.UI.config.labsWorkflowGraph.enabled = ' TRUE ';
-  assert.equal(L.getConfig().enabled, true);
-  c.Nuxeo.UI.config.labsWorkflowGraph.enabled = false;
-  assert.equal(L.getConfig().enabled, false);
-  c.Nuxeo.UI.config.labsWorkflowGraph.enabled = 'nonsense';
-  assert.equal(L.getConfig().enabled, true);
-});
-
 test('t: Web UI bundle first, English fallback, never a raw key of the plugin', () => {
   const c = load();
   const L = c.NuxeoLabs.WorkflowGraph;

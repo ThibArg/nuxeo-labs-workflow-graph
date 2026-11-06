@@ -43,7 +43,7 @@ graphs: zoom, fit to screen, center on the current step and the direction of the
 - **Themes**: follows the Web UI theme (default, dark, Hyland light and dark); the main colors can be changed
   with CSS variables (see [Colors](#colors)).
 - **Translations**: English and French. Labels coming from the workflow definition are translated as in Web UI.
-- **Safe**: if the plugin is disabled or the graph cannot be drawn, Web UI's default graph is opened.
+- **Safe**: if the graph cannot be drawn, Web UI's default graph is opened.
 
 ## Keyboard, mouse and touch
 
@@ -102,23 +102,10 @@ of the document page and of the task view open the new dialog.
 > This package conflicts with `nuxeo-labs-custom-workflow-graph` (the detailed, interactive version of this
 > viewer): both replace the same dialog, install only one of them.
 
-## Configuration
+There is no setting to turn the plugin off: to go back to Web UI's default graph, uninstall the package
+(`nuxeoctl mp-remove nuxeo-labs-workflow-graph`, then restart).
 
-| Property | Default | Description |
-| --- | --- | --- |
-| `org.nuxeo.web.ui.labsWorkflowGraph.enabled` | `true` | `false`: Web UI's default graph is used, as if the plugin was not installed |
-
-The property is exposed to Web UI as `Nuxeo.UI.config.labsWorkflowGraph.enabled` and read each time a graph is
-opened. To change it, contribute it again, for example from Studio (Configuration > XML Extensions):
-
-```xml
-<require>nuxeo.labs.workflowgraph.properties</require>
-<extension target="org.nuxeo.runtime.ConfigurationService" point="configuration">
-  <property name="org.nuxeo.web.ui.labsWorkflowGraph.enabled">false</property>
-</extension>
-```
-
-### Colors
+## Colors
 
 By default, the colors derive from the Web UI theme variables (`--nuxeo-text-default`, `--nuxeo-box`,
 `--nuxeo-page-background`, `--nuxeo-focus-ring-color`, `--nuxeo-primary-color`...), so the graph follows the theme
@@ -195,13 +182,12 @@ nuxeo-labs-workflow-graph-web/src/main/resources/
 ├── META-INF/MANIFEST.MF
 ├── OSGI-INF/
 │   ├── deployment-fragment.xml        copies the web resources, merges the translations
-│   ├── lwg-webresources-contrib.xml   registers the bundle HTML with Web UI
-│   └── lwg-properties-contrib.xml     the "enabled" setting
+│   └── lwg-webresources-contrib.xml   registers the bundle HTML with Web UI
 └── web/nuxeo.war/ui/
     ├── i18n/messages.json, messages-fr.json
     └── nuxeo-labs-workflow-graph/
         ├── nuxeo-labs-workflow-graph-bundle.html   entry point (script order)
-        ├── lwg-core.js                namespace, setting, directions (storage), translations, text measuring, model
+        ├── lwg-core.js                namespace, directions (storage), translations, text measuring, model
         ├── lwg-layout.js              geometry helpers and the layout, top to bottom or left to right (dagre)
         ├── lwg-icons.js               inline SVG icons (Material Icons)
         ├── lwg-styles.js              CSS of the graph (no animation)
@@ -221,7 +207,7 @@ The `dev/` folder is not packaged. Nothing is installed by the project: the brow
 
 | Command | What it does |
 | --- | --- |
-| `node --test dev/test` | Unit tests of the setting, directions and their storage, translations, model (including the transition colors), geometry and layout (every sample in both directions: steps placed without overlap, transitions attached to their steps, labels off the steps). Node 20+, no dependency |
+| `node --test dev/test` | Unit tests of the directions and their storage, translations, model (including the transition colors), geometry and layout (every sample in both directions: steps placed without overlap, transitions attached to their steps, labels off the steps). Node 20+, no dependency |
 | `python3 -m http.server 8765` then `http://localhost:8765/dev/demo/index.html` | Demo of the renderer with the sample workflows, themes and languages (URL parameters: `wf`, `theme`, `lang`, `dir` to force `TB` or `LR`; otherwise the direction is kept per sample, as in the dialog) |
 | `node dev/tools/screenshots.mjs [filter]` | Renders every sample in every theme (and left to right) in headless Chrome and writes `dev/out/demo/*.png`, then checks the interactions: initial view (zoom on the current step for a large graph), `F`, `C` (cycling), `+`, `-`, minimum zoom, toolbar, Ctrl + wheel, wheel, drag, no animation, steps not focusable, transition colors, color overrides, direction switch (view reset, kept per workflow, not stored for TB). Fails on any console error or warning. Filter `checks`: interaction checks only |
 

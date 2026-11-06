@@ -18,9 +18,9 @@
  */
 
 /*
- * Core of the workflow graph: namespace, setting, directions (and the memory of the user's choice), translations,
- * text measuring and the conversion of the REST graph (GET /api/v1/workflow/{id}/graph) into the model used by
- * the layout and the renderer.
+ * Core of the workflow graph: namespace, directions (and the memory of the user's choice), translations, text
+ * measuring and the conversion of the REST graph (GET /api/v1/workflow/{id}/graph) into the model used by the
+ * layout and the renderer.
  *
  * No dependency on Polymer or on the DOM (the DOM is only used, when present, to measure text), so the
  * file can be unit tested with Node.
@@ -43,32 +43,6 @@
   // dagre is loaded right after this file and declares a global "dagre". Remember any previous value so
   // lwg-layout.js can restore it and never break another add-on shipping its own dagre.
   LWG._previousDagre = root.dagre;
-
-  /* ==================== Setting ==================== */
-
-  function toBoolean(value, fallback) {
-    if (typeof value === 'boolean') {
-      return value;
-    }
-    if (typeof value === 'string') {
-      const v = value.trim().toLowerCase();
-      if (v === 'true') {
-        return true;
-      }
-      if (v === 'false') {
-        return false;
-      }
-    }
-    return fallback;
-  }
-
-  // Reads Nuxeo.UI.config.labsWorkflowGraph (org.nuxeo.web.ui.labsWorkflowGraph.* configuration properties)
-  // at each call, never cached.
-  LWG.getConfig = function () {
-    const uiConfig = root.Nuxeo && root.Nuxeo.UI && root.Nuxeo.UI.config;
-    const raw = (uiConfig && uiConfig.labsWorkflowGraph) || {};
-    return { enabled: toBoolean(raw.enabled, true) };
-  };
 
   /* ==================== Direction ==================== */
 

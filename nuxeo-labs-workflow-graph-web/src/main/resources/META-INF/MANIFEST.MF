@@ -6,5 +6,4 @@ Bundle-Version: 2025.1.0
 Bundle-Vendor: nuxeo.labs.workflowgraph
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
-Nuxeo-Component: OSGI-INF/lwg-properties-contrib.xml,
- OSGI-INF/lwg-webresources-contrib.xml
+Nuxeo-Component: OSGI-INF/lwg-webresources-contrib.xml
