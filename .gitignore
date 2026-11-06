@@ -21,6 +21,7 @@ bin/
 .mylar
 *.orig
 .pmd
+.project
 *.pyc
 .pydevproject
 *.rej
