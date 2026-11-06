@@ -22,9 +22,9 @@ graphs: zoom, fit to screen, center on the current step and the direction of the
   It ignores the drawing made in Nuxeo Studio, so it stays readable even when the Studio boxes overlap or the
   paths are outdated. Loops back to a previous step are drawn as such, and a transition looping on its own step
   is drawn around that step.
-- **Direction kept per workflow**: the direction chosen in the toolbar is kept in the browser (local storage) for
-  the workflow model, so a user can read one workflow top to bottom and another one left to right. Every
-  instance of a model (e.g. every "Serial Document Review") then opens the same way.
+- **Direction kept per workflow**: the direction chosen in the toolbar (or with the `↓` and `→` keys) is kept in
+  the browser (local storage) for the workflow model, so a user can read one workflow top to bottom and another
+  one left to right. Every instance of a model (e.g. every "Serial Document Review") then opens the same way.
 - **Modern rendering**: cards with an icon per kind of step (step, multiple tasks, sub-workflow, fork, merge),
   Start/End pills, transition labels as chips, curved transitions with arrow heads, dotted background.
 - **Current step(s)**: colored border, ring and "Current" badge. The ring stays visible at any zoom level, so
@@ -52,13 +52,13 @@ graphs: zoom, fit to screen, center on the current step and the direction of the
 | Zoom in / out | `+` / `−` | `+` (or `=`) / `-` | pinch (touch screen, trackpad), Ctrl/⌘ + wheel |
 | Fit to screen | fit button | `F` | |
 | Center on the current step | target button | `C` (repeat to go to the next current step) | |
-| Top to bottom / left to right | `↓` / `→` (the active one is highlighted) | | |
+| Top to bottom / left to right | `↓` / `→` (the active one is highlighted) | `↓` / `→` (arrow keys) | |
 | Pan | | | drag, wheel (Shift + wheel: horizontally) |
 | Close | close button | `Escape` | |
 
 The toolbar shows the zoom level (5% to 250%). The keys work once the graph has the focus: it has it when the
-dialog opens, and after a click on the graph. Inside the dialog, keys are not propagated to Web UI's global
-shortcuts (`d`, `m`, `c`, `/`...).
+dialog opens, and after a click on the graph. The `←` and `↑` arrow keys do nothing. Inside the dialog, keys are
+not propagated to Web UI's global shortcuts (`d`, `m`, `c`, `/`...).
 
 ## How it works (front end only)
 
@@ -209,7 +209,7 @@ The `dev/` folder is not packaged. Nothing is installed by the project: the brow
 | --- | --- |
 | `node --test dev/test` | Unit tests of the directions and their storage, translations, model (including the transition colors), geometry and layout (every sample in both directions: steps placed without overlap, transitions attached to their steps, labels off the steps). Node 20+, no dependency |
 | `python3 -m http.server 8765` then `http://localhost:8765/dev/demo/index.html` | Demo of the renderer with the sample workflows, themes and languages (URL parameters: `wf`, `theme`, `lang`, `dir` to force `TB` or `LR`; otherwise the direction is kept per sample, as in the dialog) |
-| `node dev/tools/screenshots.mjs [filter]` | Renders every sample in every theme (and left to right) in headless Chrome and writes `dev/out/demo/*.png`, then checks the interactions: initial view (zoom on the current step for a large graph), `F`, `C` (cycling), `+`, `-`, minimum zoom, toolbar, Ctrl + wheel, wheel, drag, no animation, steps not focusable, transition colors, color overrides, direction switch (view reset, kept per workflow, not stored for TB). Fails on any console error or warning. Filter `checks`: interaction checks only |
+| `node dev/tools/screenshots.mjs [filter]` | Renders every sample in every theme (and left to right) in headless Chrome and writes `dev/out/demo/*.png`, then checks the interactions: initial view (zoom on the current step for a large graph), `F`, `C` (cycling), `+`, `-`, minimum zoom, toolbar, Ctrl + wheel, wheel, drag, no animation, steps not focusable, transition colors, color overrides, direction switch (toolbar and `↓` / `→` keys, view reset, kept per workflow, not stored for TB). Fails on any console error or warning. Filter `checks`: interaction checks only |
 
 Environment variables of the browser tool:
 

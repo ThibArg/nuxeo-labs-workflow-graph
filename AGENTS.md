@@ -36,14 +36,16 @@ legend...). The two packages conflict (`package.xml`). Names never overlap: name
   `is-next`, `lwg-tc lwg-tc-N`, color in `--_lwg-tc`. The graph endpoint has no transition id: colors cannot
   depend on the meaning of a transition.
 - Only layout: dagre, top to bottom (default) or left to right. No Studio layout.
-- Direction: two toolbar buttons (`↓` `→`, the active one has `aria-pressed="true"`), **no keyboard shortcut, no
-  configuration property**. The user's choice is kept in `localStorage` per workflow model
-  (`workflowModelName`, instance id when the workflow cannot be read), see `LWG.directionStorageKey`; TB is never
-  stored (the entry is removed). Switching resets the view as at opening. The renderer only calls
-  `onDirectionChange`; the dialog (and the demo) do the storage.
+- Direction: two toolbar buttons (`↓` `→`, the active one has `aria-pressed="true"`) and two keys, Down arrow =
+  TB, Right arrow = LR (`DIRECTION_KEYS` in `lwg-renderer.js`, ignored with Shift/Ctrl/Alt/Meta, shown in the
+  button tooltips); **no configuration property**. Toolbar and keys share `_chooseDirection`. The user's choice is
+  kept in `localStorage` per workflow model (`workflowModelName`, instance id when the workflow cannot be read),
+  see `LWG.directionStorageKey`; TB is never stored (the entry is removed). Switching resets the view as at
+  opening. The renderer only calls `onDirectionChange`; the dialog (and the demo) do the storage.
 - View controls only: zoom (`+`/`=`, `-`, toolbar, pinch, Ctrl/Cmd + wheel, Safari gesture events), fit (`f`,
   toolbar), center on the current step (`c`, toolbar, cycles through parallel current steps), pan (drag, wheel).
-  Zoom range 5%-250%, step 1.25. No arrow keys, no double-click zoom.
+  Zoom range 5%-250%, step 1.25. Arrow keys never pan: only Down/Right are used (direction), Left/Up do nothing.
+  No double-click zoom.
 - Opening (and direction switch): fit; if the fitted zoom is under 50% and a step is current, zoom to 80%
   centered on it.
 

@@ -31,8 +31,8 @@ Contributors:
     GET /api/v1/workflow/{id}         the title and the model name (optional: "Workflow" is displayed if it
                                       cannot be read, and the direction is then kept for this instance only)
 
-  Direction: top to bottom by default. The direction chosen in the toolbar is kept in the browser
-  (localStorage), per workflow model, see LWG.directionStorageKey.
+  Direction: top to bottom by default. The direction chosen in the toolbar (or with the Down / Right arrow keys)
+  is kept in the browser (localStorage), per workflow model, see LWG.directionStorageKey.
 
   Keyboard: the key events are not propagated outside of the dialog (Web UI global shortcuts such as "d",
   "m" or "c" must not fire while the graph has the focus), except Tab (focus trap). Escape closes the dialog.
@@ -312,7 +312,7 @@ Contributors:
         _ensureRenderer() {
           if (!this._renderer) {
             this._renderer = new LWG.Renderer(this.$.canvas, {
-              // the direction chosen in the toolbar is kept in the browser, for the workflow model
+              // the direction chosen in the toolbar or with the keys is kept in the browser, for the workflow model
               onDirectionChange: (direction) => LWG.saveDirection(this._directionKey, direction),
             });
           }

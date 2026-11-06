@@ -388,10 +388,43 @@ async function checkDirection() {
   await page.click('.lwg-toolbar button[data-direction="TB"]');
   d = await directionState(page);
   expect(d.direction === 'TB' && d.stored.join() === 'demo-serial=LR', `large back to TB, stored: ${d.stored}`);
+  pageErrors.forEach((e) => errors.push(e));
+  await page.close();
+
+  // keyboard: Right arrow = left to right, Down arrow = top to bottom, as the toolbar (view reset, kept)
+  ({ page, errors: pageErrors } = await open({ query: { wf: 'parallel', theme: 'default' } }));
+  const tooltips = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('.lwg-toolbar button[data-direction]')).map((b) => b.title),
+  );
+  expect(tooltips.join() === 'Top to bottom (↓),Left to right (→)', `direction tooltips: ${tooltips}`);
+  await page.focus('.lwg-viewport');
+  await page.keyboard.press('+');
+  for (const key of ['ArrowLeft', 'ArrowUp']) {
+    await page.keyboard.press(key);
+  }
+  await page.keyboard.down('Shift');
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.up('Shift');
+  d = await directionState(page);
+  expect(d.direction === 'TB', `Left, Up or Shift + Right changed the direction: ${d.direction}`);
+  await page.keyboard.press('ArrowRight');
+  d = await directionState(page);
+  expect(d.direction === 'LR' && d.pressed.join() === 'LR', `Right arrow: ${d.direction}, pressed ${d.pressed}`);
+  expect(d.stops.every((p) => p.x > d.start.x), 'Right arrow: an end is not right of the start');
+  const fittedLR = await page.evaluate(() => window.renderer._fitTransform().scale);
+  expect(near(d.scale, Math.min(fittedLR, 1), 0.001), `Right arrow: zoom ${d.scale}, expected the opening view`);
+  expect(d.stored.includes('demo-parallel=LR'), `Right arrow, stored: ${d.stored}`);
+  await page.keyboard.press('ArrowDown');
+  d = await directionState(page);
+  expect(d.direction === 'TB' && d.pressed.join() === 'TB', `Down arrow: ${d.direction}, pressed ${d.pressed}`);
+  expect(!d.stored.includes('demo-parallel=LR'), `Down arrow, stored: ${d.stored}`);
+  const focused = await page.evaluate(() => document.activeElement.classList.contains('lwg-viewport'));
+  expect(focused, 'the graph lost the focus after a direction key');
+
   await page.evaluate(() => localStorage.clear());
   pageErrors.forEach((e) => errors.push(e));
   await page.close();
-  report('checks: direction (toggle, opening view, kept per workflow)', errors);
+  report('checks: direction (toggle, keys, opening view, kept per workflow)', errors);
 }
 
 try {

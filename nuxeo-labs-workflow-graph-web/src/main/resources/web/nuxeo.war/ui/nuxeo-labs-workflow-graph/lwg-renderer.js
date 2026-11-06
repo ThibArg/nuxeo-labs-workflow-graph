@@ -20,8 +20,9 @@
 /*
  * LWG.Renderer: draws a workflow graph in a container element and handles the view: zoom (toolbar, + and -
  * keys, pinch, Ctrl/Cmd + wheel), pan (drag, wheel), fit to screen (toolbar, F key), center on the current
- * step (toolbar, C key) and direction of the layout (toolbar: top to bottom or left to right). The graph itself
- * is read-only: steps and transitions are not interactive, and every view change is instant (no animation).
+ * step (toolbar, C key) and direction of the layout (toolbar, Down and Right arrow keys: top to bottom or left to
+ * right). The graph itself is read-only: steps and transitions are not interactive, and every view change is
+ * instant (no animation).
  * Framework-free: the Polymer dialog only feeds it with data and keeps the direction chosen by the user.
  *
  *   const renderer = new LWG.Renderer(containerElement, { onDirectionChange(direction) {...} });
@@ -59,6 +60,12 @@
   const VIEW_MARGIN = 16;
   // Room kept free at the top when fitting, so the toolbar does not cover the graph.
   const TOOLBAR_CLEARANCE = 60;
+  // Keyboard shortcuts of the directions (the arrow gives the reading direction), symbol shown in the tooltips.
+  // ArrowLeft and ArrowUp are not used.
+  const DIRECTION_KEYS = Object.freeze({
+    TB: Object.freeze({ key: 'ArrowDown', symbol: '↓' }),
+    LR: Object.freeze({ key: 'ArrowRight', symbol: '→' }),
+  });
 
   // Resolves when the web fonts are loaded (text is measured with them), at most after 1.5s.
   LWG.fontsReady = function () {
@@ -234,7 +241,7 @@
         tabindex: '0',
         role: 'region',
         'aria-label': LWG.t('labsWorkflowGraph.graph.ariaLabel'),
-        'aria-keyshortcuts': '+ - F C',
+        'aria-keyshortcuts': '+ - F C ArrowDown ArrowRight',
       });
       this.stage = el('div', 'lwg-stage', { dir: 'ltr' });
       this.svg = svgEl('svg', { class: 'lwg-edges', 'aria-hidden': 'true' });
@@ -268,11 +275,9 @@
       this._btnCenter = this._button('center', 'labsWorkflowGraph.toolbar.center', 'C', () => this.centerOnCurrent());
       this._btnDirection = {};
       LWG.DIRECTIONS.forEach((dir) => {
-        const b = this._button(`direction${dir}`, `labsWorkflowGraph.toolbar.direction.${dir}`, '', () => {
-          if (this.setDirection(dir) && typeof this.options.onDirectionChange === 'function') {
-            this.options.onDirectionChange(dir);
-          }
-        });
+        const labelKey = `labsWorkflowGraph.toolbar.direction.${dir}`;
+        const shortcut = DIRECTION_KEYS[dir].symbol;
+        const b = this._button(`direction${dir}`, labelKey, shortcut, () => this._chooseDirection(dir));
         b.dataset.direction = dir;
         this._btnDirection[dir] = b;
       });
@@ -288,6 +293,13 @@
       );
       this._updateDirectionButtons();
       return tb;
+    }
+
+    // Direction chosen by the user (toolbar or keyboard): the caller is told, so it can keep the choice.
+    _chooseDirection(dir) {
+      if (this.setDirection(dir) && typeof this.options.onDirectionChange === 'function') {
+        this.options.onDirectionChange(dir);
+      }
     }
 
     _updateDirectionButtons() {
@@ -640,6 +652,13 @@
         case 'c':
         case 'C':
           this.centerOnCurrent();
+          break;
+        case DIRECTION_KEYS.TB.key:
+        case DIRECTION_KEYS.LR.key:
+          if (e.shiftKey) {
+            return;
+          }
+          this._chooseDirection(e.key === DIRECTION_KEYS.LR.key ? 'LR' : 'TB');
           break;
         default:
           return;
