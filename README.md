@@ -2,14 +2,18 @@
 
 An alternative for the **"View Graph"** dialog of Nuxeo Web UI (Nuxeo LTS 2025):
 
-* Drawing top to bottom or left to right,
-* With themed cards.
-* The current step and the transitions that can follow it are highlighted.
-* The graph has the controls needed to read large graphs:
-  * zoom,
-  * fit to screen,
-  * center on the current step
-  * direction of the layout.
+## TL;DR
+
+* Replaces the default graph ("View Graph" links)
+* Drawing top to bottom or left to right
+* With themed cards
+* Current step and transitions are highlighted.
+* Controls to read large graphs:
+  * Zoom
+  * Fit to screen,
+  * Center on the current step
+  * Direction of the layout.
+* Colors can be changed with CSS
 
 ![The graph in the Web UI dialog](README-Images/dialog-serial.png)
 
