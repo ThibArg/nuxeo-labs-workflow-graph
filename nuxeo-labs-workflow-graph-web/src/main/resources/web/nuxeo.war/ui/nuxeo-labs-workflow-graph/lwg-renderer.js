@@ -44,10 +44,11 @@
   const SVG_NS = 'http://www.w3.org/2000/svg';
   // Margin around the content, inside the stage (room for the badge, the ring and the shadows).
   const PAD = 28;
-  const ARROW_LENGTH = 9;
-  const ARROW_WIDTH = 8.5;
-  // The line stops inside the arrow head, so its round cap never shows past the tip.
-  const ARROW_SHORTEN = 6;
+  // Arrow heads, in px. The line stops inside the arrow head (shorten), so its round cap never shows past the tip.
+  const ARROW = Object.freeze({ length: 9, width: 8.5, shorten: 6 });
+  // Bigger arrow heads for the thicker transitions leaving a current step (stroke widths in lwg-styles.js). The
+  // width must stay below the gap between nested self-loops (selfLoop in lwg-layout.js).
+  const NEXT_ARROW = Object.freeze({ length: 13, width: 11, shorten: 8.5 });
   const MIN_SCALE = 0.05;
   const MAX_SCALE = 2.5;
   const ZOOM_STEP = 1.25;
@@ -345,14 +346,15 @@
       const points = route.points.map((p) => ({ x: p.x + PAD, y: p.y + PAD }));
       const tip = points[points.length - 1];
       const from = points[points.length - 2];
-      const line = G.shortenEnd(points, ARROW_SHORTEN);
+      const arrow = e.isNext ? NEXT_ARROW : ARROW;
+      const line = G.shortenEnd(points, arrow.shorten);
       const d = route.curve === 'rounded' ? G.roundedPath(line, 10) : G.basisPath(line);
       // is-next: leaves a current step; lwg-tc lwg-tc-N: color of the palette (its step has several transitions)
       const state = `${e.isNext ? ' is-next' : ''}${e.colorIndex ? ` lwg-tc lwg-tc-${e.colorIndex}` : ''}`;
       const g = svgEl('g', { class: `lwg-edge${state}` });
       g.append(
         svgEl('path', { class: 'lwg-edge-line', d }),
-        svgEl('path', { class: 'lwg-edge-arrow', d: G.arrowHead(tip, from, ARROW_LENGTH, ARROW_WIDTH) }),
+        svgEl('path', { class: 'lwg-edge-arrow', d: G.arrowHead(tip, from, arrow.length, arrow.width) }),
       );
       this.svg.appendChild(g);
 

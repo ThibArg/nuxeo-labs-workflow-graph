@@ -22,8 +22,10 @@ legend...). The two packages conflict (`package.xml`). Names never overlap: name
   no dimming, no details panel, no legend.
 - **No animation** of any kind (no pulse, no animated dashes, no animated zoom/pan, no CSS transition).
 - Highlighted: the current step(s) (state `suspended`: border, ring, "Current" badge) and their **outgoing**
-  transitions (thicker, labels emphasized, drawn on top). The ring keeps a minimum screen size at low zoom
-  (`--_lwg-inv-scale`) so current steps stay visible when the graph is fitted.
+  transitions (thicker, bigger arrow heads, labels emphasized, drawn on top). The ring keeps a minimum screen size
+  at low zoom (`--_lwg-inv-scale`) so current steps stay visible when the graph is fitted. Arrow head sizes:
+  `ARROW` / `NEXT_ARROW` in `lwg-renderer.js`; the `NEXT_ARROW` width must stay below the gap between nested
+  self-loops (`selfLoop` in `lwg-layout.js`, unit tested), or their arrow heads overlap.
 - Transition colors, as in Web UI's default graph: the transitions of a step with **2 or more** outgoing
   transitions get a palette color from their rank in the step (definition order, `edge.colorIndex` in
   `LWG.buildModel`): `--lwg-transition-1` to `-5` (`LWG.TRANSITION_COLOR_COUNT`), reused in turn (7 transitions:

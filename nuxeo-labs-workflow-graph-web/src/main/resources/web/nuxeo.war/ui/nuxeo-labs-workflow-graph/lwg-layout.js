@@ -158,7 +158,8 @@
    * Route of a transition looping on its own node. dagre reserves room for it (a dummy node next to the node,
    * as wide as the label) but its own self-edge points are not usable, so the loop is drawn here: it leaves
    * the node on the side of the dummy, goes around the dummy's center line (where the label is centered) and
-   * comes back into the node. `index` (0 = closest loop) spreads nested loops apart.
+   * comes back into the node. `index` (0 = closest loop) spreads nested loops apart, far enough for their arrow
+   * heads (up to 11 px wide, see lwg-renderer.js) not to overlap when the node is tall enough.
    * Returns { points, labelPos }.
    */
   function selfLoop(node, dummy, index) {
@@ -167,7 +168,7 @@
     const dy = dummy.y - node.y;
     if (Math.abs(dx) >= Math.abs(dy)) {
       const edgeX = node.x + ((dx >= 0 ? 1 : -1) * node.width) / 2;
-      const spread = Math.max(6, Math.min(node.height / 2 - 8, 16 + 10 * i));
+      const spread = Math.max(6, Math.min(node.height / 2 - 6, 15 + 12 * i));
       return {
         points: [
           { x: edgeX, y: node.y - spread },

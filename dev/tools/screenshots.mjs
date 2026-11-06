@@ -259,22 +259,36 @@ async function checkSmallGraph() {
   expect(statics.interactive === 0, 'steps or labels are focusable');
   expect(statics.nextLabels === 4, `${statics.nextLabels} highlighted labels, expected 4`);
 
-  // transition colors: the 4 transitions of the current step have 4 colors of the palette, drawn thicker; the
-  // single transition of the start stays neutral
+  // transition colors: the 4 transitions of the current step have 4 colors of the palette, drawn thicker with
+  // bigger arrow heads; the single transition of the start stays neutral
   const tc = await page.evaluate(() => {
     const line = (e) => getComputedStyle(e.querySelector('.lwg-edge-line'));
-    const next = Array.from(document.querySelectorAll('.lwg-edge.is-next'));
+    // arrow head path: tip, back corner, notch, other back corner; its width is the distance between the corners
+    const arrowWidth = (e) => {
+      const n = e.querySelector('.lwg-edge-arrow').getAttribute('d').match(/-?\d+(\.\d+)?/g).map(Number);
+      return Math.hypot(n[2] - n[6], n[3] - n[7]);
+    };
+    const edge = (e) => ({
+      cls: e.getAttribute('class'),
+      stroke: line(e).stroke,
+      width: parseFloat(line(e).strokeWidth),
+      arrow: arrowWidth(e),
+    });
     return {
       current: getComputedStyle(document.querySelector('.lwg-node.is-current')).borderTopColor,
-      next: next.map((e) => ({ cls: e.getAttribute('class'), stroke: line(e).stroke, width: line(e).strokeWidth })),
+      next: Array.from(document.querySelectorAll('.lwg-edge.is-next')).map(edge),
+      others: Array.from(document.querySelectorAll('.lwg-edge:not(.is-next)')).map(edge),
       palette: Array.from(document.querySelectorAll('.lwg-edge.lwg-tc')).map((e) => line(e).stroke),
       neutral: Array.from(document.querySelectorAll('.lwg-edge:not(.lwg-tc)')).map((e) => line(e).stroke),
     };
   });
   const nextColors = new Set(tc.next.map((n) => n.stroke));
+  const thickest = Math.max(...tc.others.map((o) => o.width));
+  const biggestArrow = Math.max(...tc.others.map((o) => o.arrow));
   expect(tc.next.every((n) => /\blwg-tc-[1-4]\b/.test(n.cls)), `next transitions: ${tc.next.map((n) => n.cls)}`);
   expect(nextColors.size === 4 && !nextColors.has(tc.current), `next transition colors: ${[...nextColors]}`);
-  expect(tc.next.every((n) => n.width === '2.8px'), `next transition widths: ${tc.next.map((n) => n.width)}`);
+  expect(tc.next.every((n) => n.width > thickest), `next transition widths: ${tc.next.map((n) => n.width)}`);
+  expect(tc.next.every((n) => n.arrow > biggestArrow), `next arrow heads: ${tc.next.map((n) => n.arrow)}`);
   expect(tc.palette.length === 8 && tc.neutral.length === 1, `${tc.palette.length} colored, ${tc.neutral.length} not`);
   expect(!tc.palette.includes(tc.neutral[0]), `the single transition is colored (${tc.neutral[0]})`);
 

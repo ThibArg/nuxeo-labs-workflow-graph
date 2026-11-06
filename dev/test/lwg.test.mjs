@@ -320,6 +320,20 @@ test('computeLayout reads from top to bottom by default, from left to right with
   }
 });
 
+test('computeLayout: nested self-loops end far enough apart for the arrow heads of next transitions', () => {
+  // the current step of the serial sample loops twice on itself (Rejection, Validation); 11 px wide arrow heads
+  const model = LWG.buildModel(samples.serial.graph);
+  for (const direction of ['TB', 'LR']) {
+    const layout = LWG.computeLayout(model, { direction });
+    const ends = model.edges
+      .filter((e) => e.isSelfLoop)
+      .map((e) => layout.edges[e.id].points.slice(-1)[0]);
+    assert.equal(ends.length, 2);
+    const gap = Math.hypot(ends[0].x - ends[1].x, ends[0].y - ends[1].y);
+    assert.ok(gap >= 12, `${direction}: self-loops end ${gap} px apart`);
+  }
+});
+
 test('computeLayout of the large sample is fast, taller than wide (TB), wider than tall (LR)', () => {
   const model = LWG.buildModel(samples.large.graph);
   assert.equal(model.nodes.length, 59);

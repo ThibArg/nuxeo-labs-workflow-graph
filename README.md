@@ -34,7 +34,8 @@ graphs: zoom, fit to screen, center on the current step and the direction of the
   get different colors (5 colors, reused in turn), so they are easy to follow. A step with a single transition
   uses a neutral color.
 - **Next transitions**: the transitions leaving the current step(s) keep their color and are drawn thicker, with
-  emphasized labels, on top of the other transitions. A single one is drawn in the highlight color.
+  bigger arrow heads and emphasized labels, on top of the other transitions. A single one is drawn in the
+  highlight color.
 - **Static**: no hover effect, no selection, no dimming, no animation. Every view change is instant.
 - **Opening**: the graph is fitted to the dialog. When it would then be displayed under 50%, the view zooms to
   80% on the current step instead (press `F` to see the whole graph). Switching the direction resets the view
