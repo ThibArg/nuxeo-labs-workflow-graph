@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: nuxeo-labs-workflow-graph-web
+Bundle-SymbolicName: nuxeo.labs.workflowgraph.nuxeo-labs-workflow-graph-web;singleton=true
+Bundle-Version: 2025.1.0
+Bundle-Vendor: nuxeo.labs.workflowgraph
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: .
+Nuxeo-Component: OSGI-INF/lwg-properties-contrib.xml,
+ OSGI-INF/lwg-webresources-contrib.xml

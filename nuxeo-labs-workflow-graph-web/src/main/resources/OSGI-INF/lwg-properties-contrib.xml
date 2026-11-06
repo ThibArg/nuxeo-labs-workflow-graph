@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="nuxeo.labs.workflowgraph.properties">
+
+  <documentation>
+    Settings of the workflow graph. Properties prefixed with "org.nuxeo.web.ui" are exposed to Web UI as
+    Nuxeo.UI.config (see config.jsp), here under Nuxeo.UI.config.labsWorkflowGraph.
+
+    To change a value, contribute the same property from Studio (Configuration > XML Extensions) or from
+    another bundle, and add
+      &lt;require&gt;nuxeo.labs.workflowgraph.properties&lt;/require&gt;
+    to the component so it is deployed after this one.
+
+    @since 2025.1
+  </documentation>
+
+  <extension target="org.nuxeo.runtime.ConfigurationService" point="configuration">
+    <!--
+      true: "View Graph" opens the graph of this plugin.
+      false: Web UI's default (jsPlumb) graph is used, as if the plugin was not installed.
+      Read each time a graph is opened.
+    -->
+    <property name="org.nuxeo.web.ui.labsWorkflowGraph.enabled">true</property>
+  </extension>
+
+</component>

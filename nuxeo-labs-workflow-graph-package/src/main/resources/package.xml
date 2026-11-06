@@ -1,0 +1,29 @@
+<!-- See documentation at http://doc.nuxeo.com/x/HgIz -->
+<package type="addon" name="nuxeo-labs-workflow-graph" version="@VERSION@">
+  <title>Nuxeo Labs Workflow Graph</title>
+  <description>
+    <p>Replaces the "View Graph" dialog of Nuxeo Web UI with a simple, modern and read-only workflow graph:
+    automatic layout (top to bottom or left to right), themed cards, current step and its next transitions
+    highlighted, zoom (buttons, keys, pinch), fit to screen and center on the current step. Web UI resources
+    only, no server-side code.</p>
+  </description>
+  <vendor>Hyland</vendor>
+  <installer restart="true" />
+  <uninstaller restart="true" />
+  <nuxeo-validation>none</nuxeo-validation>
+  <production-state>testing</production-state>
+  <supported>false</supported>
+  <target-platform>
+    <name>lts</name>
+    <version>[@NUXEO_TARGET_VERSION@,)</version>
+  </target-platform>
+  <dependencies>
+    <package>nuxeo-web-ui</package>
+  </dependencies>
+  <conflicts>
+    <package>nuxeo-labs-custom-workflow-graph</package>
+  </conflicts>
+  <license>Apache License, Version 2.0</license>
+  <license-url>http://www.apache.org/licenses/LICENSE-2.0</license-url>
+  <visibility>DEV</visibility>
+</package>

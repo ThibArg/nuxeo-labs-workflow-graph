@@ -1,0 +1,348 @@
+<!--
+(C) Copyright 2026 Hyland (http://hyland.com/) and others.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contributors:
+    Thibaud Arguillere (with the help of opencode/Claude Opus 5.5)
+-->
+
+<!--
+  `nuxeo-labs-workflow-graph-dialog`: large dialog showing the title of the workflow and its graph
+  (LWG.Renderer). Created by lwg-override.js inside Web UI's nuxeo-workflow-graph element, where the default
+  dialog lives, so it behaves the same way (stacking, notifications, theme).
+
+    dialog.open(workflowId) returns a promise. When the graph cannot be fetched, the dialog closes and shows
+    Web UI's usual error message. When it cannot be drawn, the dialog closes and the promise rejects with
+    error.lwgFallback = true, so the caller can open Web UI's default graph instead.
+
+  Only uses existing endpoints:
+    GET /api/v1/workflow/{id}/graph   the graph (required)
+    GET /api/v1/workflow/{id}         the title and the model name (optional: "Workflow" is displayed if it
+                                      cannot be read, and the direction is then kept for this instance only)
+
+  Direction: top to bottom by default. The direction chosen in the toolbar is kept in the browser
+  (localStorage), per workflow model, see LWG.directionStorageKey.
+
+  Keyboard: the key events are not propagated outside of the dialog (Web UI global shortcuts such as "d",
+  "m" or "c" must not fire while the graph has the focus), except Tab (focus trap). Escape closes the dialog.
+
+  @since 2025.1
+-->
+<dom-module id="nuxeo-labs-workflow-graph-dialog">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      #dialog {
+        width: min(1680px, 94vw);
+        height: 90vh;
+        max-width: none;
+        max-height: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-radius: 14px;
+        background: var(--nuxeo-box, #fff);
+        color: var(--nuxeo-text-default, #3a3a54);
+      }
+
+      .body {
+        flex: 1;
+        min-height: 0;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex;
+        flex-direction: column;
+        font-family: var(--nuxeo-app-font, Inter, Arial, sans-serif);
+      }
+
+      .header {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 10px 12px 10px 24px;
+        border-bottom: 1px solid color-mix(in srgb, var(--nuxeo-text-default, #3a3a54) 12%, transparent);
+      }
+
+      h2 {
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .close {
+        appearance: none;
+        -webkit-appearance: none;
+        flex: 0 0 40px;
+        width: 40px;
+        height: 40px;
+        margin: 0;
+        padding: 9px;
+        border: none;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--nuxeo-text-default, #3a3a54);
+        cursor: pointer;
+      }
+
+      .close:hover {
+        background: color-mix(in srgb, var(--nuxeo-text-default, #3a3a54) 9%, transparent);
+      }
+
+      .close:focus-visible {
+        outline: 2px solid var(--nuxeo-focus-ring-color, var(--nuxeo-primary-color, #0066ff));
+        outline-offset: 1px;
+      }
+
+      .close svg {
+        display: block;
+        width: 22px;
+        height: 22px;
+        fill: currentColor;
+      }
+
+      .graph {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+      }
+
+      #canvas {
+        position: absolute;
+        inset: 0;
+      }
+
+      .loading {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--_lwg-bg);
+        color: var(--_lwg-text-muted);
+        font-size: 14px;
+      }
+    </style>
+
+    <nuxeo-resource
+      id="graphResource"
+      path="/workflow/[[workflowId]]/graph"
+      headers='{"Content-Type": "application/json"}'
+    ></nuxeo-resource>
+    <nuxeo-resource id="workflowResource" path="/workflow/[[workflowId]]"></nuxeo-resource>
+
+    <nuxeo-dialog
+      id="dialog"
+      with-backdrop
+      no-cancel-on-outside-click
+      aria-labelledby="title"
+      on-iron-overlay-opened="_onOpened"
+    >
+      <div class="body">
+        <div class="header">
+          <h2 id="title" dir="auto">[[_title(workflow, i18n)]]</h2>
+          <button
+            class="close"
+            type="button"
+            on-click="close"
+            title$="[[_t('labsWorkflowGraph.dialog.close', i18n)]]"
+            aria-label$="[[_t('labsWorkflowGraph.dialog.close', i18n)]]"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+              ></path>
+            </svg>
+          </button>
+        </div>
+        <div class="graph">
+          <div id="canvas"></div>
+          <div class="loading lwg-theme" hidden$="[[!loading]]" role="status">
+            [[_t('labsWorkflowGraph.loading', i18n)]]
+          </div>
+        </div>
+      </div>
+    </nuxeo-dialog>
+  </template>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const LWG = window.NuxeoLabs.WorkflowGraph;
+
+      // nuxeo-resource rejects with plain objects ({ status, message }): returns an Error carrying the flags.
+      function errorWith(flags, cause) {
+        const error = cause instanceof Error ? cause : new Error((cause && cause.message) || String(cause));
+        Object.assign(error, flags);
+        if (cause && cause !== error) {
+          error.cause = cause;
+        }
+        return error;
+      }
+
+      Polymer({
+        is: 'nuxeo-labs-workflow-graph-dialog',
+        behaviors: [Nuxeo.I18nBehavior, Nuxeo.NotifyBehavior],
+
+        properties: {
+          workflowId: {
+            type: String,
+          },
+
+          // The workflow entity (GET /workflow/{id}), null until loaded or if it cannot be read.
+          workflow: {
+            type: Object,
+            value: null,
+          },
+
+          loading: {
+            type: Boolean,
+            value: false,
+          },
+        },
+
+        ready() {
+          this.$.dialog.addEventListener('keydown', (e) => this._onKeyDown(e));
+        },
+
+        /*
+         * Opens the dialog and loads the graph. Resolves when the graph is drawn. Rejects (after closing the
+         * dialog) when the graph cannot be fetched (Web UI's error message is shown) or drawn (error.lwgFallback).
+         * An opening replaced by a newer one resolves without doing anything.
+         */
+        open(workflowId) {
+          let renderer;
+          try {
+            renderer = this._ensureRenderer();
+          } catch (e) {
+            return Promise.reject(errorWith({ lwgFallback: true }, e));
+          }
+          this._loadCount = (this._loadCount || 0) + 1;
+          const loadId = this._loadCount;
+          const isStale = () => loadId !== this._loadCount;
+          this.workflowId = workflowId;
+          this.workflow = null;
+          this.loading = true;
+          const dialog = this.$.dialog;
+          if (!dialog.opened) {
+            dialog.open();
+          }
+
+          // The workflow entity gives the title and the model name, under which the direction chosen by the user
+          // is kept: the graph waits for it (both requests run in parallel). It is optional.
+          const workflowLoaded = this.$.workflowResource
+            .get()
+            .then((workflow) => {
+              const entity = workflow && workflow['entity-type'] === 'workflow' ? workflow : null;
+              if (!isStale()) {
+                this.workflow = entity;
+              }
+              return entity;
+            })
+            .catch((e) => {
+              console.warn(LWG.LOG_PREFIX, 'Cannot read the workflow:', (e && (e.status || e.message)) || e);
+              return null;
+            });
+
+          return Promise.all([this.$.graphResource.get(), LWG.fontsReady()])
+            .catch((e) => {
+              throw errorWith({ lwgGraphError: true }, e);
+            })
+            .then(([graph]) => workflowLoaded.then((workflow) => ({ graph, workflow })))
+            .then(({ graph, workflow }) => {
+              if (isStale()) {
+                return;
+              }
+              if (!graph || !Array.isArray(graph.nodes)) {
+                throw errorWith({ lwgGraphError: true }, new Error('Invalid workflow graph response'));
+              }
+              this._directionKey = LWG.directionStorageKey(workflow, workflowId);
+              try {
+                renderer.setGraph(graph, { direction: LWG.loadDirection(this._directionKey) });
+              } catch (e) {
+                throw errorWith({ lwgFallback: true }, e);
+              }
+              this.loading = false;
+            })
+            .catch((error) => {
+              if (isStale()) {
+                return;
+              }
+              this.loading = false;
+              dialog.close();
+              if (!error.lwgFallback) {
+                this.notify({ message: this.i18n('documentPage.route.view.graph.error') });
+              }
+              throw error;
+            });
+        },
+
+        close() {
+          this.$.dialog.close();
+        },
+
+        _ensureRenderer() {
+          if (!this._renderer) {
+            this._renderer = new LWG.Renderer(this.$.canvas, {
+              // the direction chosen in the toolbar is kept in the browser, for the workflow model
+              onDirectionChange: (direction) => LWG.saveDirection(this._directionKey, direction),
+            });
+          }
+          return this._renderer;
+        },
+
+        _onOpened(e) {
+          // ignore the events of nested overlays
+          if (e.target === this.$.dialog && this._renderer) {
+            this._renderer.focus();
+          }
+        },
+
+        // Escape is handled by the overlay manager of Polymer (document listener, capture phase): it closes the
+        // dialog whatever the focus
+        _onKeyDown(e) {
+          if (e.key !== 'Tab') {
+            e.stopPropagation();
+          }
+        },
+
+        _title(workflow) {
+          const title = workflow && LWG.translateLabel(workflow.title || workflow.name);
+          return title || LWG.t('labsWorkflowGraph.dialog.defaultTitle');
+        },
+
+        _t(key) {
+          return LWG.t(key);
+        },
+      });
+    })();
+  </script>
+</dom-module>

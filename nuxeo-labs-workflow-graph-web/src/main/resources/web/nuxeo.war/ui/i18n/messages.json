@@ -1,0 +1,23 @@
+{
+  "labsWorkflowGraph.dialog.close": "Close",
+  "labsWorkflowGraph.dialog.defaultTitle": "Workflow",
+  "labsWorkflowGraph.loading": "Loading the workflow graph…",
+  "labsWorkflowGraph.empty": "This workflow has no step.",
+  "labsWorkflowGraph.graph.ariaLabel": "Workflow graph",
+  "labsWorkflowGraph.kind.start": "Start",
+  "labsWorkflowGraph.kind.end": "End",
+  "labsWorkflowGraph.kind.step": "Step",
+  "labsWorkflowGraph.kind.multiTask": "Multiple tasks",
+  "labsWorkflowGraph.kind.subWorkflow": "Sub-workflow",
+  "labsWorkflowGraph.kind.fork": "Fork",
+  "labsWorkflowGraph.kind.merge": "Merge",
+  "labsWorkflowGraph.current": "Current",
+  "labsWorkflowGraph.currentStep": "Current step",
+  "labsWorkflowGraph.toolbar.zoomIn": "Zoom in",
+  "labsWorkflowGraph.toolbar.zoomOut": "Zoom out",
+  "labsWorkflowGraph.toolbar.zoomLevel": "Zoom level",
+  "labsWorkflowGraph.toolbar.fit": "Fit to screen",
+  "labsWorkflowGraph.toolbar.center": "Center on the current step",
+  "labsWorkflowGraph.toolbar.direction.TB": "Top to bottom",
+  "labsWorkflowGraph.toolbar.direction.LR": "Left to right"
+}
