@@ -1,5 +1,10 @@
 # Nuxeo Labs Workflow Graph
 
+> [!IMPORTANT]
+> This repository has moved to
+> [nuxeo-sandbox/nuxeo-labs-workflow-graph](https://github.com/nuxeo-sandbox/nuxeo-labs-workflow-graph)
+> and is archived. Please use the new location.
+
 An alternative for the **"View Graph"** dialog of Nuxeo Web UI (Nuxeo LTS 2025):
 
 ## TL;DR
