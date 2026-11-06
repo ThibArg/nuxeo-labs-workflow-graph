@@ -1,10 +1,15 @@
 # Nuxeo Labs Workflow Graph
 
-A simple, modern replacement for the **"View Graph"** dialog of Nuxeo Web UI (Nuxeo LTS 2025). The whole workflow
-is laid out automatically, top to bottom or left to right, and drawn with themed cards. The transitions leaving a
-step get different colors. The current step and the transitions that can follow it are highlighted. The graph is
-read-only: no clickable steps, no details panel, no animation. It only has the controls needed to read large
-graphs: zoom, fit to screen, center on the current step and the direction of the layout.
+An alternative for the **"View Graph"** dialog of Nuxeo Web UI (Nuxeo LTS 2025):
+
+* Drawing top to bottom or left to right,
+* With themed cards.
+* The current step and the transitions that can follow it are highlighted.
+* The graph has the controls needed to read large graphs:
+  * zoom,
+  * fit to screen,
+  * center on the current step
+  * direction of the layout.
 
 ![The graph in the Web UI dialog](README-Images/dialog-serial.png)
 
@@ -14,14 +19,10 @@ graphs: zoom, fit to screen, center on the current step and the direction of the
 | ![Left to right](README-Images/dialog-serial-LR.png) | ![Left to right, Hyland dark theme](README-Images/contract-hyland-dark-LR.png) |
 | ![Hyland dark theme](README-Images/contract-hyland-dark.png) | ![Dark theme, French](README-Images/serial-dark-fr.png) |
 
-> The screenshots come from the development tools described below (mocked data).
-
 ## Features
 
 - **Automatic layout** ([dagre](https://github.com/dagrejs/dagre)), top to bottom by default or left to right.
-  It ignores the drawing made in Nuxeo Studio, so it stays readable even when the Studio boxes overlap or the
-  paths are outdated. Loops back to a previous step are drawn as such, and a transition looping on its own step
-  is drawn around that step.
+  It ignores the drawing made in Nuxeo Studio.
 - **Direction kept per workflow**: the direction chosen in the toolbar (or with the `↓` and `→` keys) is kept in
   the browser (local storage) for the workflow model, so a user can read one workflow top to bottom and another
   one left to right. Every instance of a model (e.g. every "Serial Document Review") then opens the same way.
@@ -36,9 +37,8 @@ graphs: zoom, fit to screen, center on the current step and the direction of the
 - **Next transitions**: the transitions leaving the current step(s) keep their color and are drawn thicker, with
   bigger arrow heads and emphasized labels, on top of the other transitions. A single one is drawn in the
   highlight color.
-- **Static**: no hover effect, no selection, no dimming, no animation. Every view change is instant.
 - **Opening**: the graph is fitted to the dialog. When it would then be displayed under 50%, the view zooms to
-  80% on the current step instead (press `F` to see the whole graph). Switching the direction resets the view
+  80% on the current step instead (press `f` key to see the whole graph). Switching the direction resets the view
   the same way.
 - **Themes**: follows the Web UI theme (default, dark, Hyland light and dark); the main colors can be changed
   with CSS variables (see [Colors](#colors)).
@@ -50,15 +50,14 @@ graphs: zoom, fit to screen, center on the current step and the direction of the
 | Action | Toolbar | Keyboard | Mouse / touch |
 | --- | --- | --- | --- |
 | Zoom in / out | `+` / `−` | `+` (or `=`) / `-` | pinch (touch screen, trackpad), Ctrl/⌘ + wheel |
-| Fit to screen | fit button | `F` | |
-| Center on the current step | target button | `C` (repeat to go to the next current step) | |
+| Fit to screen | fit button | `f` | |
+| Center on the current step | target button | `c` (repeat to go to the next current step) | |
 | Top to bottom / left to right | `↓` / `→` (the active one is highlighted) | `↓` / `→` (arrow keys) | |
 | Pan | | | drag, wheel (Shift + wheel: horizontally) |
 | Close | close button | `Escape` | |
 
 The toolbar shows the zoom level (5% to 250%). The keys work once the graph has the focus: it has it when the
-dialog opens, and after a click on the graph. The `←` and `↑` arrow keys do nothing. Inside the dialog, keys are
-not propagated to Web UI's global shortcuts (`d`, `m`, `c`, `/`...).
+dialog opens, and after a click on the graph.
 
 ## How it works (front end only)
 
@@ -81,29 +80,14 @@ not propagated to Web UI's global shortcuts (`d`, `m`, `c`, `/`...).
 | `GET /api/v1/workflow/{id}` | the title is "Workflow", and the direction is kept for this workflow instance only |
 | Layout or drawing error | the dialog closes and Web UI's default graph is opened |
 
-## Installation
-
-Build with Maven (Java 21, Maven 3.8+):
-
-```bash
-mvn clean install
-```
-
-and install the package
-`nuxeo-labs-workflow-graph-package/target/nuxeo-labs-workflow-graph-package-2025.1.0-SNAPSHOT.zip`:
-
-```bash
-nuxeoctl mp-install /path/to/nuxeo-labs-workflow-graph-package-2025.1.0-SNAPSHOT.zip
-```
-
-Requires Nuxeo LTS 2025 with the `nuxeo-web-ui` package. After the installation (restart), the "View Graph" links
-of the document page and of the task view open the new dialog.
-
-> This package conflicts with `nuxeo-labs-custom-workflow-graph` (the detailed, interactive version of this
-> viewer): both replace the same dialog, install only one of them.
-
-There is no setting to turn the plugin off: to go back to Web UI's default graph, uninstall the package
-(`nuxeoctl mp-remove nuxeo-labs-workflow-graph`, then restart).
+> [!WARNING]
+> The override of the display of the default graph (the patch of the `show()` method) is done in
+> [lwg-override.js](nuxeo-labs-workflow-graph-web/src/main/resources/web/nuxeo.war/ui/nuxeo-labs-workflow-graph/lwg-override.js),
+> which **uses the shadow DOM** to find the correct, original, element => it depends on this structure and the display
+> **could break with a new version of nuxeo-web-ui**.
+>
+> Notice this is very unlikely, but it is the only way to patch the original dialog without forking Web UI (and we
+> don't want to fork Web UI)
 
 ## Colors
 
@@ -222,11 +206,42 @@ The samples (`dev/demo/samples.js`) are SerialDocumentReview, ParallelDocumentRe
 Nuxeo sources, plus two synthetic workflows: "contract" (fork, merge, loops, sub-workflow, long titles) and
 "large" (59 steps, two current steps in parallel branches).
 
+## Build
+
+### Local Build
+
+After cloning the repo:
+
+```bash
+cd /path/to/nuxeo-labs-workflow-graph
+mvn clean install
+```
+
+The marketplace package is produced at `nuxeo-labs-workflow-graph-package/target/nuxeo-labs-workflow-graph-package-<VERSION>>.zip`. To install it:
+
+```bash
+nuxeoctl mp-install /path/to/nuxeo-labs-workflow-graph-package-<VERSIONn>.zip
+```
+
+### Nuxeo marketplace
+
+The package is available in Nuxeo Marketplace. So, for example, you can just add `nuxeo-labs-workflow-graph` to your Studio dependencies, or in the `NUXEO_PACKAGES` variable of a Docker deployment.
+
 ## Third-party code
 
 - [dagre](https://github.com/dagrejs/dagre) 3.1.3, MIT License (`vendor/dagre.LICENSE.txt`), unmodified
   `dist/dagre.min.js` (SHA-256 `54a503e346f93ca0bb10abe7999587e037262935687aca45eb4e4b0f64bbb578`).
 - Material Icons by Google, Apache License 2.0 (SVG paths in `lwg-icons.js`).
+
+## Support
+
+These features are not part of the Nuxeo Production platform. They are not supported, and are provided
+without warranty of any kind. Use them at your own risk.
+
+> [!TIP]
+> The Nuxeo Product Team *may* integrate the changes in the platform, but there are many other priorities.
+> So, if you need this feature,  **we strongly recommend a Nuxeo Partner or your dev team forks the code
+> and takes ownership** (tuning, maintenance, support)
 
 ## License
 
@@ -234,5 +249,6 @@ Nuxeo sources, plus two synthetic workflows: "contract" (fork, merge, loops, sub
 
 ## About Nuxeo
 
-Nuxeo Platform is an open source Content Services platform, written in Java and part of Hyland. Data can be stored
-in both SQL & NoSQL databases. Learn more at [hyland.com](https://www.hyland.com).
+[Nuxeo](https://www.hyland.com/en/products/nuxeo-platform), developed by [Hyland](https://www.hyland.com),
+is a Content Services platform. It provides an easy-to-use, highly customizable and extensible
+architecture for building content-centric applications.
